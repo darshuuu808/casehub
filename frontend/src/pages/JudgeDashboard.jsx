@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom'
 export default function JudgeDashboard() {
   const [cases, setCases] = useState([])
   const [hearings, setHearings] = useState({})
+  const [summaries, setSummaries] = useState({})
+  const [loadingSummary, setLoadingSummary] = useState({})
   const [message, setMessage] = useState('')
   const user = JSON.parse(localStorage.getItem('user'))
   const navigate = useNavigate()
@@ -19,6 +21,17 @@ export default function JudgeDashboard() {
   async function fetchHearings(caseId) {
     const res = await API.get(`/hearings/case/${caseId}`)
     setHearings(prev => ({ ...prev, [caseId]: res.data }))
+  }
+
+  async function generateSummary(caseId) {
+    setLoadingSummary(prev => ({ ...prev, [caseId]: true }))
+    try {
+      const res = await API.post(`/ai/summarize/${caseId}`)
+      setSummaries(prev => ({ ...prev, [caseId]: res.data.summary }))
+    } catch (err) {
+      setMessage('Failed to generate summary')
+    }
+    setLoadingSummary(prev => ({ ...prev, [caseId]: false }))
   }
 
   async function updateHearing(hearingId, status, judgment) {
@@ -62,10 +75,27 @@ export default function JudgeDashboard() {
                   {c.status}
                 </span>
               </div>
-              <button onClick={() => fetchHearings(c.id)}
-                style={{ marginTop:'12px', padding:'6px 14px', background:'#2563EB', color:'white', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'13px' }}>
-                View Hearings
-              </button>
+
+              {/* AI Summary Button */}
+              <div style={{ marginTop:'12px', display:'flex', gap:'8px' }}>
+                <button onClick={() => fetchHearings(c.id)}
+                  style={{ padding:'6px 14px', background:'#2563EB', color:'white', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'13px' }}>
+                  View Hearings
+                </button>
+                <button onClick={() => generateSummary(c.id)}
+                  disabled={loadingSummary[c.id]}
+                  style={{ padding:'6px 14px', background:'#7c3aed', color:'white', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'13px' }}>
+                  {loadingSummary[c.id] ? 'Generating...' : '✨ AI Summary'}
+                </button>
+              </div>
+
+              {/* AI Summary Output */}
+              {summaries[c.id] && (
+                <div style={{ marginTop:'12px', background:'#f5f3ff', border:'1px solid #ddd6fe', borderRadius:'8px', padding:'16px' }}>
+                  <h4 style={{ margin:'0 0 8px', color:'#7c3aed' }}>✨ AI Case Summary</h4>
+                  <p style={{ margin:'0', fontSize:'14px', color:'#374151', whiteSpace:'pre-wrap', lineHeight:'1.6' }}>{summaries[c.id]}</p>
+                </div>
+              )}
 
               {hearings[c.id] && (
                 <div style={{ marginTop:'12px' }}>

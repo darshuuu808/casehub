@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-
+const aiRouter = require('./routes/ai');
 const casesRouter = require('./routes/cases');
 const hearingsRouter = require('./routes/hearings');
 const usersRouter = require('./routes/users');
@@ -17,6 +17,7 @@ app.use('/api/hearings', hearingsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/search', searchRouter);
 
+app.use('/api/ai', aiRouter);
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Casehub API running' });
 });
