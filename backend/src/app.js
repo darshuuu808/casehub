@@ -22,7 +22,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'Casehub API running' });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Casehub API running on port ${PORT}`);
 });
